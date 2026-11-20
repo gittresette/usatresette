@@ -1,0 +1,96 @@
+; Corner unit adjustable shelf unifixt recipe
+
+(_RUNDEFAULTHELPERRCP "UNIFIXT_DEFAULT" nil "p2chelper")
+
+(_FSET (_ 'currentShelfCODE (_& (_ (XSTR "CORNER_UNIT") "_" (XSTR "ADJUSTABLE_SHELF") "_" divisionCounter "_" shelfCounter))))
+(_FSET (_ 'paramBody (_& (_ "AK_ADJUSTABLE_SHELF_" divisionCounter "_" shelfCounter "_"))))
+; Global parameters of current shelf
+(_FSET (_ 'currentShelfHEI (_S2V (_& (_ paramBody "HEI")))))
+(_FSET (_ 'currentShelfWID (_S2V (_& (_ paramBody "WID")))))
+(_FSET (_ 'currentShelfDEP (_S2V (_& (_ paramBody "DEP")))))
+(_FSET (_ 'currentShelfDEP2 (_S2V (_& (_ paramBody "DEP2")))))
+(_FSET (_ 'currentShelfELEV (if (_S2V (_& (_ paramBody "ELEV"))) (_S2V (_& (_ paramBody "ELEV"))) 0.0)))
+(_FSET (_ 'currentShelfTHICKNESS (_S2V (_& (_ paramBody "THICKNESS")))))
+
+(if (_EXISTPANEL currentShelfCODE)
+	(progn
+		(if (_NOTNULL ASHELF_HOLES_ON_LOWER_SURFACE)
+			(progn
+				(_FSET (_ 'shelfROT (_S2V (_& (_ paramBody "ROT")))))
+				(_FSET (_ 'shelfMAT (_S2V (_& (_ paramBody "MAT")))))
+				(_FSET (_ 'shelfPDATA (_S2V (_& (_ paramBody "PDATA")))))
+				
+				(_FSET (_ 'currentShelfCODE (_CREATESFACEMAIN currentShelfCODE (_ shelfPDATA shelfROT shelfMAT currentShelfTHICKNESS "X"))))
+			)
+		)
+		(if (or (and (>= currentShelfHEI LIMIT_FOR_MIDDLE_HOLE_GROUP) (>= currentShelfWID LIMIT_FOR_MIDDLE_HOLE_GROUP)) (_NOTNULL IS_MIDDLE_HOLE_GROUP_AVAILABLE))
+			(progn
+				(_FSET (_ 'thirdUnifixt T))
+				(_FSET (_ 'thirdUnifixtOffsetDEP (+ (/ currentShelfDEP 2.0) MIDDLE_HOLE_GROUP_OFFSET_FROM_CENTER_OF_SIDE ASHELF_FRONT_OFFSET)))
+				(_FSET (_ 'thirdUnifixtOffsetDEP2 (+ (/ currentShelfDEP2 2.0) MIDDLE_HOLE_GROUP_OFFSET_FROM_CENTER_OF_SIDE ASHELF_FRONT_OFFSET)))
+			)
+			(_FSET (_ 'thirdUnifixt nil))
+		)
+		(_FSET (_ 'leftFrontHolePosX currentShelfHEI))
+		(_FSET (_ 'leftFrontHolePosY (- currentShelfDEP2 ASHELF_FRONT_HOLE_OFFSET)))
+		(_FSET (_ 'leftBackHolePosX currentShelfHEI))
+		(_FSET (_ 'leftBackHolePosY ASHELF_BACK_HOLE_OFFSET))
+
+		(_FSET (_ 'rightFrontHolePosX (- currentShelfDEP ASHELF_FRONT_HOLE_OFFSET)))
+		(_FSET (_ 'rightFrontHolePosY currentShelfWID))
+		(_FSET (_ 'rightBackHolePosX ASHELF_BACK_HOLE_OFFSET))
+		(_FSET (_ 'rightBackHolePosY currentShelfWID))
+		(if (_NOTNULL thirdUnifixt)
+			(progn
+				(_FSET (_ 'leftThirdHolePosX currentShelfHEI))
+				(_FSET (_ 'leftThirdHolePosY (_= "currentShelfDEP2 - thirdUnifixtOffsetDEP2 + ASHELF_FRONT_OFFSET")))
+				
+				(_FSET (_ 'rightThirdHolePosX (_= "currentShelfDEP - thirdUnifixtOffsetDEP + ASHELF_FRONT_OFFSET")))
+				(_FSET (_ 'rightThirdHolePosY currentShelfWID))
+			)
+		)
+		(_FSET (_ 'leftFrontHolePos (_ leftFrontHolePosX leftFrontHolePosY 0)))
+		(_FSET (_ 'leftBackHolePos (_ leftBackHolePosX leftBackHolePosY 0)))
+		(_FSET (_ 'rightFrontHolePos (_ rightFrontHolePosX rightFrontHolePosY 0)))
+		(_FSET (_ 'rightBackHolePos (_ rightBackHolePosX rightBackHolePosY 0)))
+
+		(_UNIFIXT "LF" currentShelfCODE (_ leftFrontHolePos UNIFIXT_PARAMETERS) "X-")
+		(_UNIFIXT "LB" currentShelfCODE (_ leftBackHolePos UNIFIXT_PARAMETERS) "X-")
+		(_UNIFIXT "RF" currentShelfCODE (_ rightFrontHolePos UNIFIXT_PARAMETERS) "Y-")
+		(_UNIFIXT "RB" currentShelfCODE (_ rightBackHolePos UNIFIXT_PARAMETERS) "Y-")
+		(_ITEMMAIN UNIFIXT_CODE currentShelfCODE (_ (* QUANTITY_OF_ITEM 4) UNIFIXT_UNIT))
+		(if (_NOTNULL thirdUnifixt)
+			(progn
+				(_FSET (_ 'leftMiddleHolePos (_ leftThirdHolePosX leftThirdHolePosY 0)))
+				(_FSET (_ 'rightMiddleHolePos (_ rightThirdHolePosX rightThirdHolePosY 0)))
+				
+				(_UNIFIXT "LM" currentShelfCODE (_ leftMiddleHolePos UNIFIXT_PARAMETERS) "X-")
+				(_UNIFIXT "RM" currentShelfCODE (_ rightMiddleHolePos UNIFIXT_PARAMETERS) "Y-")
+				(_ITEMMAIN UNIFIXT_CODE currentShelfCODE (_ (* QUANTITY_OF_ITEM 2) UNIFIXT_UNIT))
+			)
+		)
+		(_FSET (_ 'halfOfThickness (/ currentShelfTHICKNESS 2.0)))
+		(_FSET (_ 'currentDivisionELEV (_S2V (_& (_ currentDivision "_STARTFROMBOTTOM")))))
+		(_FSET (_ 'holePosOnAxisYLeft (_= "currentDivisionELEV + currentShelfELEV + halfOfThickness - bottomSideStyleV1 + LEFT_PANEL_LOWER_VARIANCE")))
+		(_FSET (_ 'holePosOnAxisYRight (_= "currentDivisionELEV + currentShelfELEV + halfOfThickness - bottomSideStyleV1 + RIGHT_PANEL_LOWER_VARIANCE")))
+		(if (_EXISTPANEL AK_LEFT_PANEL_CODE)
+			(progn
+				(_UNIFIXT "FRONT" AK_LEFT_PANEL_CODE (_ (_ (+ ASHELF_FRONT_OFFSET ASHELF_FRONT_HOLE_OFFSET) holePosOnAxisYLeft 0) UNIFIXT_PARAMETERS) nil)
+				(_UNIFIXT "BACK" AK_LEFT_PANEL_CODE (_ (_ (_= "ASHELF_FRONT_OFFSET + currentShelfDEP2 - ASHELF_BACK_HOLE_OFFSET") holePosOnAxisYLeft 0) UNIFIXT_PARAMETERS) nil)
+				(if (_NOTNULL thirdUnifixt)
+					(_UNIFIXT "MIDDLE" AK_LEFT_PANEL_CODE (_ (_ thirdUnifixtOffsetDEP2 holePosOnAxisYLeft 0) UNIFIXT_PARAMETERS) nil)
+				)
+			)
+		)
+		(if (_EXISTPANEL AK_RIGHT_PANEL_CODE)
+			(progn
+				(_UNIFIXT "FRONT" AK_RIGHT_PANEL_CODE (_ (_ (_= "AK_RIGHT_PANEL_WID - ASHELF_FRONT_OFFSET - ASHELF_FRONT_HOLE_OFFSET") holePosOnAxisYRight 0) UNIFIXT_PARAMETERS) nil)
+				(_UNIFIXT "BACK" AK_RIGHT_PANEL_CODE (_ (_ (_= "AK_RIGHT_PANEL_WID - ASHELF_FRONT_OFFSET - currentShelfDEP + ASHELF_BACK_HOLE_OFFSET") holePosOnAxisYRight 0) UNIFIXT_PARAMETERS) nil)
+				(if (_NOTNULL thirdUnifixt)
+					(_UNIFIXT "MIDDLE" AK_RIGHT_PANEL_CODE (_ (_ (- AK_RIGHT_PANEL_WID thirdUnifixtOffsetDEP) holePosOnAxisYRight 0) UNIFIXT_PARAMETERS) nil)
+				)
+			)
+		)
+	)
+)
+

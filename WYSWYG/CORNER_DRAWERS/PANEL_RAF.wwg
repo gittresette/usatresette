@@ -1,0 +1,25 @@
+(setq wwg_layerName (ifnull gm1:layerName szBodyLayer))
+(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+(createGPanel 
+	(list 
+		(list 0.0 0.0 0.0) 
+		(list (- unitW ad_et) 0.0 0.0) 
+		(list (- unitW ad_et) (- unitD 2.7) 0.0) 
+		(list (- unitD 2.7) (- unitD 2.7) 0.0 ) 
+		(list (- unitD 2.7) (- unitW2 ad_et) 0.0 ) 
+		(list 0.0 (- unitW2 ad_et) 0.0 ) 
+	)
+	nil
+	ad_et 
+	0.0 
+	(d2r 270.00)
+	(list (- unitW2 ad_et) 0.0 (- (+ dAltKot 35) ad_et) )
+	"PANEL_TOP" 
+	"" 
+	nil 
+	"SHELF" 
+	(strcat kodBlock "_" wwg_layerName)
+	wwg_layerName
+	"noedgedrawing"
+	"notch_type"
+)

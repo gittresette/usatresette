@@ -1,0 +1,204 @@
+; -------------------------------------------------- DEFAULT RECIPES ---------------------------------------------------------
+
+(_RUNDEFAULTHELPERRCP "AK_DEFAULT" nil "p2chelper")
+(_RUNDEFAULTHELPERRCP "FIXED_SHELF_DEFAULT" nil "p2chelper")
+(_RUNDEFAULTHELPERRCP "PANELS_JUNCTION_STYLES_DEFAULT" nil "p2chelper")
+(_RUNDEFAULTHELPERRCP "EDGES_DEFAULT" nil "p2chelper")
+(_RUNDEFAULTHELPERRCP "GROOVES_DEFAULT" nil "p2chelper")
+
+(if (or (null CORNER_UNIT_CONTROL) (null AK_FIXED_SHELF_ELEV_LIST))
+	(progn
+		; No corner unit control or no fixed shelf elevation list
+		(_NONOTCH)
+	)
+	(progn
+; -------------------------------------------------- PANEL ROTATION ---------------------------------------------------------
+		; Control for cutlist and dxf rotation
+		(if (null FIXED_SHELF_PANEL_CUTLIST_ROTATION) (_FSET (_ 'FIXED_SHELF_PANEL_CUTLIST_ROTATION __MODULBODYMATROT)))
+		(if (null FIXED_SHELF_PANEL_DXF_ROTATION) (_FSET (_ 'FIXED_SHELF_PANEL_DXF_ROTATION __MODULBODYMATROT)))
+
+		(cond
+			((or (equal __MODULTYPE "AK2") (equal __MODULTYPE "UK2"))
+; -------------------------------------------------- AK2/UK2 90 DEGREE CORNER UNIT ---------------------------------------------------------
+				; Edgestrip material controls
+				(if (null FIXED_SHELF_LEFT_EDGESTRIP_MAT) (_FSET (_ 'FIXED_SHELF_LEFT_EDGESTRIP_MAT SHELF_HIDDEN_EDGES_MAT)))
+				(if (null FIXED_SHELF_RIGHT_EDGESTRIP_MAT) (_FSET (_ 'FIXED_SHELF_RIGHT_EDGESTRIP_MAT SHELF_HIDDEN_EDGES_MAT)))
+				(if (null FIXED_SHELF_TOP_EDGESTRIP_MAT) (_FSET (_ 'FIXED_SHELF_TOP_EDGESTRIP_MAT SHELF_HIDDEN_EDGES_MAT)))
+				(if (null FIXED_SHELF_BOTTOM_EDGESTRIP_MAT) (_FSET (_ 'FIXED_SHELF_BOTTOM_EDGESTRIP_MAT SHELF_FRONTSIDE_EDGES_MAT)))
+				(if (null AK_FSHELF_WIDOPPWID_EDGESTRIP_MAT) (_FSET (_ 'AK_FSHELF_WIDOPPWID_EDGESTRIP_MAT SHELF_FRONTSIDE_EDGES_MAT)))
+				(if (null AK_FSHELF_WIDOPPHEI_EDGESTRIP_MAT) (_FSET (_ 'AK_FSHELF_WIDOPPHEI_EDGESTRIP_MAT SHELF_FRONTSIDE_EDGES_MAT)))
+				(_ADDPARTMAT2EDGESTRIPS (_ 'FIXED_SHELF_LEFT_EDGESTRIP_MAT 'FIXED_SHELF_RIGHT_EDGESTRIP_MAT 'FIXED_SHELF_TOP_EDGESTRIP_MAT 'FIXED_SHELF_BOTTOM_EDGESTRIP_MAT 'AK_FSHELF_WIDOPPWID_EDGESTRIP_MAT 'AK_FSHELF_WIDOPPHEI_EDGESTRIP_MAT) __MODULBODYMAT ADD_PART_MATERIAL)
+				; Width of edgestrips are taken from database
+				(_FSET (_ 'LEFT_EDGESTRIP_WID (_GETEDGESTRIPWIDFROMDB FIXED_SHELF_LEFT_EDGESTRIP_MAT)))
+				(_FSET (_ 'RIGHT_EDGESTRIP_WID (_GETEDGESTRIPWIDFROMDB FIXED_SHELF_RIGHT_EDGESTRIP_MAT)))
+				(_FSET (_ 'TOP_EDGESTRIP_WID (_GETEDGESTRIPWIDFROMDB FIXED_SHELF_TOP_EDGESTRIP_MAT)))
+				(_FSET (_ 'BOTTOM_EDGESTRIP_WID (_GETEDGESTRIPWIDFROMDB FIXED_SHELF_BOTTOM_EDGESTRIP_MAT)))
+				(_FSET (_ 'WIDOPPWID_EDGESTRIP_WIDTH (_GETEDGESTRIPWIDFROMDB AK_FSHELF_WIDOPPWID_EDGESTRIP_MAT)))
+				(_FSET (_ 'WIDOPPHEI_EDGESTRIP_WIDTH (_GETEDGESTRIPWIDFROMDB AK_FSHELF_WIDOPPHEI_EDGESTRIP_MAT)))
+
+				; Shelf dimension variables for 90 degree L-shaped fixed shelf
+				; Same vertex convention as AK_BOTTOM_PANEL for AK2:
+				; (0,0) -> (0, WID) -> (DEP, WID) -> (DEP, DEP2) -> (HEI, DEP2) -> (HEI, 0) -> close
+				(_FSET (_ 'shelfHEI (_= "__WID2 - __AD_PANELTHICK - GROOVE_WID - GROOVE_DISTANCE")))
+				(_FSET (_ 'shelfWID (_= "__WID - __AD_PANELTHICK - GROOVE_WID - GROOVE_DISTANCE")))
+				(_FSET (_ 'shelfDEP (_= "__DEP - GROOVE_WID - GROOVE_DISTANCE - FIXED_SHELF_FRONT_OFFSET")))
+				(_FSET (_ 'shelfDEP2 (_= "__DEP2 - GROOVE_WID - GROOVE_DISTANCE - FIXED_SHELF_FRONT_OFFSET")))
+				(_FSET (_ 'shelfWIDOPPWID (_= "__WIDOPPWID - __AD_PANELTHICK + FIXED_SHELF_FRONT_OFFSET")))
+				(_FSET (_ 'shelfWIDOPPHEI (_= "__WID2OPPWID - __AD_PANELTHICK + FIXED_SHELF_FRONT_OFFSET")))
+
+				(_FSET (_ 'shelfCounter 1))
+				(foreach elevList AK_FIXED_SHELF_ELEV_LIST
+					(_FSET (_ 'paramBody (_& (_ "AK_FIXED_SHELF_" shelfCounter "_"))))
+
+					(_FSET (_ 'tempHEI (_& (_ paramBody "HEI"))))
+					(_FSET (_ 'tempWID (_& (_ paramBody "WID"))))
+					(_FSET (_ 'tempDEP (_& (_ paramBody "DEP"))))
+					(_FSET (_ 'tempDEP2 (_& (_ paramBody "DEP2"))))
+					(_FSET (_ 'tempWIDOPPWID (_& (_ paramBody "WIDOPPWID"))))
+					(_FSET (_ 'tempWIDOPPHEI (_& (_ paramBody "WIDOPPHEI"))))
+
+					(_FSET (_ 'tempROT (_& (_ paramBody "ROT"))))
+					(_FSET (_ 'tempMAT (_& (_ paramBody "MAT"))))
+					(_FSET (_ 'tempTHICKNESS (_& (_ paramBody "THICKNESS"))))
+					(_FSET (_ 'tempELEV (_& (_ paramBody "ELEV"))))
+
+					(_FSET (_ 'tempPDATA (_& (_ paramBody "PDATA"))))
+					(_FSET (_ 'tempLABEL (_& (_ paramBody "LABEL"))))
+					(_FSET (_ 'tempTAG (_& (_ paramBody "TAG"))))
+					(_FSET (_ 'tempEDGESTRIPS (_& (_ paramBody "EDGESTRIPS"))))
+
+					; Assign shelf dimension values
+					(_FSET (_ (read tempHEI) shelfHEI))
+					(_FSET (_ (read tempWID) shelfWID))
+					(_FSET (_ (read tempDEP) shelfDEP))
+					(_FSET (_ (read tempDEP2) shelfDEP2))
+					(_FSET (_ (read tempWIDOPPWID) shelfWIDOPPWID))
+					(_FSET (_ (read tempWIDOPPHEI) shelfWIDOPPHEI))
+
+					(_FSET (_ (read tempROT) (_ FIXED_SHELF_PANEL_MAIN_ROTATION FIXED_SHELF_PANEL_CUTLIST_ROTATION FIXED_SHELF_PANEL_DXF_ROTATION FIXED_SHELF_PANEL_MIRRORING_AXIS)))
+					(_FSET (_ (read tempMAT) __MODULBODYMAT))
+					(_FSET (_ (read tempTHICKNESS) __AD_PANELTHICK))
+					(_FSET (_ (read tempELEV) elevList))
+
+					; L-shaped 6-vertex polygon (same convention as AK_BOTTOM_PANEL for AK2)
+					(_FSET (_ (read tempPDATA) (_ (_ 0.0 0.0 0.0) 0 
+												  (_ 0.0 (_S2V tempWID) 0.0) 0 
+												  (_ (_S2V tempDEP) (_S2V tempWID) 0.0) 0 
+												  (_ (_S2V tempDEP) (_S2V tempDEP2) 0.0) 0 
+												  (_ (_S2V tempHEI) (_S2V tempDEP2) 0.0) 0 
+												  (_ (_S2V tempHEI) 0.0 0.0) 0 
+												  (_ 0.0 0.0 0.0) 0)))
+
+					(_FSET (_ (read tempLABEL) (XSTR FIXED_SHELF_PANEL_LABEL)))
+					(_FSET (_ (read tempTAG) FIXED_SHELF_PANEL_TAG))
+
+					(_FSET (_ (read tempEDGESTRIPS) (_ (_ FIXED_SHELF_LEFT_EDGESTRIP_MAT LEFT_EDGESTRIP_WID)
+													   (_ FIXED_SHELF_TOP_EDGESTRIP_MAT TOP_EDGESTRIP_WID)
+													   (_ AK_FSHELF_WIDOPPWID_EDGESTRIP_MAT WIDOPPWID_EDGESTRIP_WIDTH)
+													   (_ AK_FSHELF_WIDOPPHEI_EDGESTRIP_MAT WIDOPPHEI_EDGESTRIP_WIDTH)
+													   (_ FIXED_SHELF_BOTTOM_EDGESTRIP_MAT BOTTOM_EDGESTRIP_WID)
+													   (_ FIXED_SHELF_RIGHT_EDGESTRIP_MAT RIGHT_EDGESTRIP_WID))))
+
+					; Unique code of fixed shelf
+					(_FSET (_ 'currentShelfCODE (_& (_ (XSTR "CORNER_UNIT") "_" (XSTR "FIXED_SHELF") "_" shelfCounter))))
+
+					(_PANELMAIN currentShelfCODE (_ (_S2V tempPDATA) (_S2V tempROT) (_S2V tempMAT) (_S2V tempTHICKNESS)))
+
+					(_CREATEEDGESTRIPS currentShelfCODE (_S2V tempEDGESTRIPS))
+
+					(_PUTLABEL currentShelfCODE currentShelfCODE (_S2V tempLABEL))
+					(_PUTTAG currentShelfCODE currentShelfCODE (_S2V tempTAG))
+
+					(_FSET (_ 'shelfCounter (+ shelfCounter 1)))
+				)
+			)
+			((or (equal __MODULTYPE "AK3") (equal __MODULTYPE "UK3"))
+; -------------------------------------------------- AK3/UK3 135 DEGREE CORNER UNIT ---------------------------------------------------------
+				; Edgestrip material controls
+				(if (null FIXED_SHELF_LEFT_EDGESTRIP_MAT) (_FSET (_ 'FIXED_SHELF_LEFT_EDGESTRIP_MAT SHELF_HIDDEN_EDGES_MAT)))
+				(if (null FIXED_SHELF_RIGHT_EDGESTRIP_MAT) (_FSET (_ 'FIXED_SHELF_RIGHT_EDGESTRIP_MAT SHELF_HIDDEN_EDGES_MAT)))
+				(if (null FIXED_SHELF_TOP_EDGESTRIP_MAT) (_FSET (_ 'FIXED_SHELF_TOP_EDGESTRIP_MAT SHELF_HIDDEN_EDGES_MAT)))
+				(if (null FIXED_SHELF_BOTTOM_EDGESTRIP_MAT) (_FSET (_ 'FIXED_SHELF_BOTTOM_EDGESTRIP_MAT SHELF_HIDDEN_EDGES_MAT)))
+				(if (null FIXED_SHELF_SLOPING_EDGESTRIP_MAT) (_FSET (_ 'FIXED_SHELF_SLOPING_EDGESTRIP_MAT SHELF_FRONTSIDE_EDGES_MAT)))
+				(_ADDPARTMAT2EDGESTRIPS (_ 'FIXED_SHELF_LEFT_EDGESTRIP_MAT 'FIXED_SHELF_RIGHT_EDGESTRIP_MAT 'FIXED_SHELF_TOP_EDGESTRIP_MAT 'FIXED_SHELF_BOTTOM_EDGESTRIP_MAT 'FIXED_SHELF_SLOPING_EDGESTRIP_MAT) __MODULBODYMAT ADD_PART_MATERIAL)
+				; Width of edgestrips are taken from database
+				(_FSET (_ 'LEFT_EDGESTRIP_WID (_GETEDGESTRIPWIDFROMDB FIXED_SHELF_LEFT_EDGESTRIP_MAT)))
+				(_FSET (_ 'RIGHT_EDGESTRIP_WID (_GETEDGESTRIPWIDFROMDB FIXED_SHELF_RIGHT_EDGESTRIP_MAT)))
+				(_FSET (_ 'TOP_EDGESTRIP_WID (_GETEDGESTRIPWIDFROMDB FIXED_SHELF_TOP_EDGESTRIP_MAT)))
+				(_FSET (_ 'BOTTOM_EDGESTRIP_WID (_GETEDGESTRIPWIDFROMDB FIXED_SHELF_BOTTOM_EDGESTRIP_MAT)))
+				(_FSET (_ 'SLOPING_EDGESTRIP_WIDTH (_GETEDGESTRIPWIDFROMDB FIXED_SHELF_SLOPING_EDGESTRIP_MAT)))
+
+				; Shelf dimension variables for 135 degree pentagonal fixed shelf
+				; Same vertex convention as AK_BOTTOM_PANEL for AK3:
+				; (0,0) -> (0, WID) -> (DEP, WID) -> (HEI, DEP2) -> (HEI, 0) -> close
+				(_FSET (_ 'shelfHEI (_= "__WID2 - __AD_PANELTHICK - GROOVE_WID - GROOVE_DISTANCE")))
+				(_FSET (_ 'shelfWID (_= "__WID - __AD_PANELTHICK - GROOVE_WID - GROOVE_DISTANCE")))
+				(_FSET (_ 'shelfDEP (_= "__DEP - GROOVE_WID - GROOVE_DISTANCE - FIXED_SHELF_FRONT_OFFSET")))
+				(_FSET (_ 'shelfDEP2 (_= "__DEP2 - GROOVE_WID - GROOVE_DISTANCE - FIXED_SHELF_FRONT_OFFSET")))
+				(_FSET (_ 'shelfSLOPINGEDGE (sqrt (+ (expt (- shelfHEI shelfDEP) 2) (expt (- shelfWID shelfDEP2) 2)))))
+
+				(_FSET (_ 'shelfCounter 1))
+				(foreach elevList AK_FIXED_SHELF_ELEV_LIST
+					(_FSET (_ 'paramBody (_& (_ "AK_FIXED_SHELF_" shelfCounter "_"))))
+
+					(_FSET (_ 'tempHEI (_& (_ paramBody "HEI"))))
+					(_FSET (_ 'tempWID (_& (_ paramBody "WID"))))
+					(_FSET (_ 'tempDEP (_& (_ paramBody "DEP"))))
+					(_FSET (_ 'tempDEP2 (_& (_ paramBody "DEP2"))))
+					(_FSET (_ 'tempSlopingEdge (_& (_ paramBody "SLOPING_EDGE"))))
+
+					(_FSET (_ 'tempROT (_& (_ paramBody "ROT"))))
+					(_FSET (_ 'tempMAT (_& (_ paramBody "MAT"))))
+					(_FSET (_ 'tempTHICKNESS (_& (_ paramBody "THICKNESS"))))
+					(_FSET (_ 'tempELEV (_& (_ paramBody "ELEV"))))
+
+					(_FSET (_ 'tempPDATA (_& (_ paramBody "PDATA"))))
+					(_FSET (_ 'tempLABEL (_& (_ paramBody "LABEL"))))
+					(_FSET (_ 'tempTAG (_& (_ paramBody "TAG"))))
+					(_FSET (_ 'tempEDGESTRIPS (_& (_ paramBody "EDGESTRIPS"))))
+
+					; Assign shelf dimension values
+					(_FSET (_ (read tempHEI) shelfHEI))
+					(_FSET (_ (read tempWID) shelfWID))
+					(_FSET (_ (read tempDEP) shelfDEP))
+					(_FSET (_ (read tempDEP2) shelfDEP2))
+					(_FSET (_ (read tempSlopingEdge) shelfSLOPINGEDGE))
+
+					(_FSET (_ (read tempROT) (_ FIXED_SHELF_PANEL_MAIN_ROTATION FIXED_SHELF_PANEL_CUTLIST_ROTATION FIXED_SHELF_PANEL_DXF_ROTATION FIXED_SHELF_PANEL_MIRRORING_AXIS)))
+					(_FSET (_ (read tempMAT) __MODULBODYMAT))
+					(_FSET (_ (read tempTHICKNESS) __AD_PANELTHICK))
+					(_FSET (_ (read tempELEV) elevList))
+
+					; Pentagonal 5-vertex polygon (same convention as AK_BOTTOM_PANEL for AK3)
+					(_FSET (_ (read tempPDATA) (_ (_ 0.0 0.0 0.0) 0 
+												  (_ 0.0 (_S2V tempWID) 0.0) 0 
+												  (_ (_S2V tempDEP) (_S2V tempWID) 0.0) 0 
+												  (_ (_S2V tempHEI) (_S2V tempDEP2) 0.0) 0 
+												  (_ (_S2V tempHEI) 0.0 0.0) 0 
+												  (_ 0.0 0.0 0.0) 0)))
+
+					(_FSET (_ (read tempLABEL) (XSTR FIXED_SHELF_PANEL_LABEL)))
+					(_FSET (_ (read tempTAG) FIXED_SHELF_PANEL_TAG))
+
+					(_FSET (_ (read tempEDGESTRIPS) (_ (_ FIXED_SHELF_LEFT_EDGESTRIP_MAT LEFT_EDGESTRIP_WID)
+													   (_ FIXED_SHELF_TOP_EDGESTRIP_MAT TOP_EDGESTRIP_WID)
+													   (_ FIXED_SHELF_SLOPING_EDGESTRIP_MAT SLOPING_EDGESTRIP_WIDTH)
+													   (_ FIXED_SHELF_BOTTOM_EDGESTRIP_MAT BOTTOM_EDGESTRIP_WID)
+													   (_ FIXED_SHELF_RIGHT_EDGESTRIP_MAT RIGHT_EDGESTRIP_WID))))
+
+					; Unique code of fixed shelf
+					(_FSET (_ 'currentShelfCODE (_& (_ (XSTR "CORNER_UNIT") "_" (XSTR "FIXED_SHELF") "_" shelfCounter))))
+
+					(_PANELMAIN currentShelfCODE (_ (_S2V tempPDATA) (_S2V tempROT) (_S2V tempMAT) (_S2V tempTHICKNESS)))
+
+					(_CREATEEDGESTRIPS currentShelfCODE (_S2V tempEDGESTRIPS))
+
+					(_PUTLABEL currentShelfCODE currentShelfCODE (_S2V tempLABEL))
+					(_PUTTAG currentShelfCODE currentShelfCODE (_S2V tempTAG))
+
+					(_FSET (_ 'shelfCounter (+ shelfCounter 1)))
+				)
+			)
+		)
+	)
+)

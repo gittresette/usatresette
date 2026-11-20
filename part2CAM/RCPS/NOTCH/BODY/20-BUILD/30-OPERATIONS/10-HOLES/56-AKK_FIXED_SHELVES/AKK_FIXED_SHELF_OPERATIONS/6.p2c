@@ -1,0 +1,147 @@
+; Notch variant of AKK fixed shelf operations - Type 6: Both panels notched
+; Drills connector holes on NOTCHED_FIXED_SHELF, NOTCHED_LEFT_PANEL_CODE, NOTCHED_RIGHT_PANEL_CODE and secondary panels
+
+(_FSET (_ 'shelfCounter 1))
+(repeat (length BLIND_CORNER_FIXED_SHELF_ELEV_LIST)
+	; Original shelf parameters are still available in variable space
+	(_FSET (_ 'paramBody (_& (_ "FIXED_SHELF_0_" shelfCounter "_"))))
+
+	(_FSET (_ 'currentShelfHEI (_S2V (_& (_ paramBody "HEI")))))
+	(_FSET (_ 'currentShelfWID (_S2V (_& (_ paramBody "WID")))))
+	(_FSET (_ 'currentShelfELEV (_S2V (_& (_ paramBody "ELEV")))))
+	(_FSET (_ 'currentShelfTHICKNESS (_S2V (_& (_ paramBody "THICKNESS")))))
+
+	; Read U-shape notch parameters from stored notched shelf
+	(_FSET (_ 'notchedShelfRIGHTBACK (_S2V (_& (_ "NOTCHED_FIXED_SHELF_0_" shelfCounter "_RIGHT_BACK")))))
+	(_FSET (_ 'notchedShelfMIDDLEBACK (_S2V (_& (_ "NOTCHED_FIXED_SHELF_0_" shelfCounter "_MIDDLE_BACK")))))
+	(_FSET (_ 'notchedShelfSECONDARYSIDES (_S2V (_& (_ "NOTCHED_FIXED_SHELF_0_" shelfCounter "_SECONDARY_SIDES")))))
+	(_FSET (_ 'notchedSECONDARYSIDES (- currentShelfHEI notchedShelfSECONDARYSIDES)))
+
+	(_FSET (_ 'lengthParametersFixedShelfAndLeft (_CALCULATEPANELSINTERSECTIONLENGTH currentShelfHEI (_ 0 0 LEFT_PANEL_FRONT_VARIANCE LEFT_PANEL_BACK_VARIANCE))))
+	(mapcar '_SETA '(lengthForFixedShelfAndLeft frontStartingPointFixedShelfL backStartingPointFixedShelfL frontStartingPointLeft backStartingPointLeft) lengthParametersFixedShelfAndLeft)
+
+	(_FSET (_ 'lengthParametersForFixedShelfAndRight (_CALCULATEPANELSINTERSECTIONLENGTH currentShelfHEI (_ 0 0 RIGHT_PANEL_FRONT_VARIANCE RIGHT_PANEL_BACK_VARIANCE))))
+	(mapcar '_SETA '(lengthForFixedShelfAndRight frontStartingPointFixedShelfR backStartingPointFixedShelfR frontStartingPointRight backStartingPointRight) lengthParametersForFixedShelfAndRight)
+
+	(_FSET (_ 'halfOfThickness (/ currentShelfTHICKNESS 2.0)))
+	(_FSET (_ 'holePosOnAxisY (_= "currentShelfELEV + halfOfThickness + bottomSideStyleV2")))
+	(_FSET (_ 'holePosOnAxisYForSecondaryPanels (_= "currentShelfELEV + halfOfThickness + secondaryNotchedPanelStyleV2")))
+
+	; Re-drill connector holes on notched shelf panel (lost when shelf was notched)
+	(_FSET (_ 'notchedShelfCODE (_& (_ (XSTR "NOTCHED_FIXED_SHELF") "_0_" shelfCounter))))
+	(if (_EXISTPANEL notchedShelfCODE)
+		(progn
+			(_FSET (_ 'activeShelfCODE notchedShelfCODE))
+			(if (_NOTNULL FIXED_SHELF_HOLES_ON_LOWER_SURFACE)
+				(progn
+					(_FSET (_ 'notchedParamBody (_& (_ "NOTCHED_FIXED_SHELF_0_" shelfCounter "_"))))
+					(_FSET (_ 'nShelfPDATA (_S2V (_& (_ notchedParamBody "PDATA")))))
+					(_FSET (_ 'nShelfROT (_S2V (_& (_ notchedParamBody "ROT")))))
+					(_FSET (_ 'nShelfMAT (_S2V (_& (_ notchedParamBody "MAT")))))
+					(_FSET (_ 'activeShelfCODE (_CREATESFACEMAIN notchedShelfCODE (_ nShelfPDATA nShelfROT nShelfMAT currentShelfTHICKNESS "Y"))))
+				)
+			)
+			(foreach operationParams OPERATION_LIST
+				(mapcar '_SETA '(operationName connectorParams horizontalHolePos) operationParams)
+
+				(_FSET (_ 'fixedShelfPointListForLeftSide (_GETHOLEPOINTLIST operationName 
+					   (_ lengthForFixedShelfAndLeft 0 (car horizontalHolePos) "Y") 
+					   (_ frontStartingPointFixedShelfL backStartingPointFixedShelfL nil currentShelfHEI) 
+					   (_ FITTING_PARAMETERS nil))))
+				(_HOLEGROUP operationName activeShelfCODE fixedShelfPointListForLeftSide (_ "X+" nil) connectorParams)
+
+				(_FSET (_ 'fixedShelfPointListForRightSide (_GETHOLEPOINTLIST operationName
+					   (_ lengthForFixedShelfAndRight currentShelfWID (car horizontalHolePos) "Y") 
+					   (_ 0 0 nil currentShelfHEI) 
+					   (_ FITTING_PARAMETERS nil))))
+				(_HOLEGROUP operationName activeShelfCODE fixedShelfPointListForRightSide (_ "X-" nil) connectorParams)
+
+				; Secondary left side - shelf step holes and panel holes
+				(if (_EXISTPANEL SECONDARY_LEFT_PANEL_CODE)
+					(progn
+						(if (equal ARE_SECONDARY_NOTCHED_BACK_PANELS_DATA_SAME_WITH_NOTCHED_BACK_PANEL T)
+							(_FSET (_ 'tempExtraTouchingLength 0.0))
+							(_FSET (_ 'tempExtraTouchingLength __AD_PANELTHICK))
+						)
+						(_FSET (_ 'fixedShelfPointListForSecondaryLeftSide (_GETHOLEPOINTLIST operationName 
+							   (_ (_= "currentShelfHEI - notchedSECONDARYSIDES - tempExtraTouchingLength") (+ notchedShelfRIGHTBACK notchedShelfMIDDLEBACK) (car horizontalHolePos) "Y")
+							   (_ (+ notchedSECONDARYSIDES tempExtraTouchingLength) 0 nil currentShelfHEI) 
+							   (_ FITTING_PARAMETERS nil))))
+						(_HOLEGROUP operationName activeShelfCODE fixedShelfPointListForSecondaryLeftSide (_ "X+" nil) connectorParams)
+
+						(_FSET (_ 'secondaryLeftSidePointListForFS (_GETHOLEPOINTLIST operationName 
+							   (_ (_= "currentShelfHEI - notchedSECONDARYSIDES - tempExtraTouchingLength") holePosOnAxisYForSecondaryPanels 0 "X")
+							   (_ 0 (_= "SECONDARY_LEFT_PANEL_WID - LEFT_PANEL_BACK_VARIANCE - currentShelfHEI + notchedSECONDARYSIDES + tempExtraTouchingLength") nil SECONDARY_LEFT_PANEL_WID) 
+							   (_ FITTING_PARAMETERS nil))))
+						(_HOLEGROUP operationName SECONDARY_LEFT_PANEL_CODE secondaryLeftSidePointListForFS (_ nil "Y-") connectorParams)
+					)
+				)
+
+				; Secondary right side - shelf step holes and panel holes
+				(if (_EXISTPANEL SECONDARY_RIGHT_PANEL_CODE)
+					(progn
+						(if (equal ARE_SECONDARY_NOTCHED_BACK_PANELS_DATA_SAME_WITH_NOTCHED_BACK_PANEL T)
+							(_FSET (_ 'tempExtraTouchingLength 0.0))
+							(_FSET (_ 'tempExtraTouchingLength __AD_PANELTHICK))
+						)
+						(_FSET (_ 'fixedShelfPointListForSecondaryRightSide (_GETHOLEPOINTLIST operationName 
+							   (_ (_= "currentShelfHEI - notchedSECONDARYSIDES - tempExtraTouchingLength") notchedShelfRIGHTBACK (car horizontalHolePos) "Y")
+							   (_ (+ notchedSECONDARYSIDES tempExtraTouchingLength) 0 nil currentShelfHEI) 
+							   (_ FITTING_PARAMETERS nil))))
+						(_HOLEGROUP operationName activeShelfCODE fixedShelfPointListForSecondaryRightSide (_ "X-" nil) connectorParams)
+
+						(_FSET (_ 'secondaryRightSidePointListForFS (_GETHOLEPOINTLIST operationName 
+							   (_ (_= "currentShelfHEI - notchedSECONDARYSIDES - tempExtraTouchingLength") holePosOnAxisYForSecondaryPanels 0 "X")
+							   (_ 0 (_= "SECONDARY_RIGHT_PANEL_WID - RIGHT_PANEL_BACK_VARIANCE - currentShelfHEI + notchedSECONDARYSIDES + tempExtraTouchingLength") T SECONDARY_RIGHT_PANEL_WID) 
+							   (_ FITTING_PARAMETERS nil))))
+						(_HOLEGROUP operationName SECONDARY_RIGHT_PANEL_CODE secondaryRightSidePointListForFS (_ nil "Y-") connectorParams)
+					)
+				)
+
+				; Middle back panel - shelf side holes and panel holes
+				(if (and (_EXISTPANEL NOTCHED_MIDDLE_BACK_PANEL_CODE) (equal ARE_SECONDARY_NOTCHED_BACK_PANELS_DATA_SAME_WITH_NOTCHED_BACK_PANEL nil))
+					(progn
+						(_FSET (_ 'fixedShelfPointListForMiddleBack (_GETHOLEPOINTLIST operationName 
+							   (_ NOTCHED_MIDDLE_BACK_PANEL_WID notchedSECONDARYSIDES (car horizontalHolePos) "X")
+							   (_ (+ notchedShelfRIGHTBACK __AD_PANELTHICK) (_= "currentShelfWID - notchedShelfRIGHTBACK - notchedShelfMIDDLEBACK + __AD_PANELTHICK") nil currentShelfWID)
+							   (_ FITTING_PARAMETERS nil))))
+						(_HOLEGROUP operationName activeShelfCODE fixedShelfPointListForMiddleBack (_ "Y-" nil) connectorParams)
+
+						(_FSET (_ 'middleBackPanelPointListForFS (_GETHOLEPOINTLIST operationName 
+							   (_ NOTCHED_MIDDLE_BACK_PANEL_WID holePosOnAxisYForSecondaryPanels 0 "X")
+							   (_ 0.0 0.0 T NOTCHED_MIDDLE_BACK_PANEL_WID)
+							   (_ FITTING_PARAMETERS nil))))
+						(_HOLEGROUP operationName NOTCHED_MIDDLE_BACK_PANEL_CODE middleBackPanelPointListForFS (_ nil "Y-") connectorParams)
+					)
+				)
+			)
+		)
+	)
+
+	; Drill connector holes on notched side panels
+	(foreach operationParams OPERATION_LIST
+		(mapcar '_SETA '(operationName connectorParams horizontalHolePos) operationParams)
+
+		(if (_EXISTPANEL NOTCHED_LEFT_PANEL_CODE)
+			(progn
+				(_FSET (_ 'leftPanelPointListForFixedShelf (_GETHOLEPOINTLIST operationName 
+					   (_ lengthForFixedShelfAndLeft holePosOnAxisY 0 "X") 
+					   (_ (+ frontStartingPointLeft FIXED_SHELF_HOLES_FRONT_SHIFT_VALUE FIXED_SHELF_FRONT_OFFSET) (- backStartingPointLeft FIXED_SHELF_HOLES_FRONT_SHIFT_VALUE FIXED_SHELF_FRONT_OFFSET) nil currentShelfHEI) 
+					   (_ FITTING_PARAMETERS nil))))
+				(_HOLEGROUP operationName NOTCHED_LEFT_PANEL_CODE leftPanelPointListForFixedShelf (_ nil "Y-") connectorParams)
+			)
+		)
+
+		(if (_EXISTPANEL NOTCHED_RIGHT_PANEL_CODE)
+			(progn
+				(_FSET (_ 'rightPanelPointListForFixedShelf (_GETHOLEPOINTLIST operationName 
+					   (_ lengthForFixedShelfAndRight holePosOnAxisY 0 "X") 
+					   (_ (_= "currentShelfHEI - RIGHT_PANEL_WID + frontStartingPointRight + FIXED_SHELF_HOLES_FRONT_SHIFT_VALUE + FIXED_SHELF_FRONT_OFFSET") (_= "RIGHT_PANEL_WID - currentShelfHEI + backStartingPointRight - FIXED_SHELF_HOLES_FRONT_SHIFT_VALUE - FIXED_SHELF_FRONT_OFFSET") T currentShelfHEI) 
+					   (_ FITTING_PARAMETERS nil))))
+				(_HOLEGROUP operationName NOTCHED_RIGHT_PANEL_CODE rightPanelPointListForFixedShelf (_ nil "Y-") connectorParams)
+			)
+		)
+	)
+
+	(_FSET (_ 'shelfCounter (+ shelfCounter 1)))
+)

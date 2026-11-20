@@ -1,0 +1,41 @@
+; Notch variant of fixed shelf operations - left panel only
+(if (and (_NOTNULL CORNER_UNIT_CONTROL) (_NOTNULL AK_FIXED_SHELF_ELEV_LIST)
+		 (or (equal __MODULTYPE "AK2") (equal __MODULTYPE "UK2") (equal __MODULTYPE "AK3") (equal __MODULTYPE "UK3")))
+	(progn
+		(_FSET (_ 'shelfCounter 1))
+		(repeat (length AK_FIXED_SHELF_ELEV_LIST)
+			(_FSET (_ 'currentShelfCODE (_& (_ (XSTR "CORNER_UNIT") "_" (XSTR "FIXED_SHELF") "_" shelfCounter))))
+
+			(if (_EXISTPANEL currentShelfCODE)
+				(progn
+					(_FSET (_ 'paramBody (_& (_ "AK_FIXED_SHELF_" shelfCounter "_"))))
+
+					(_FSET (_ 'currentShelfDEP2 (_S2V (_& (_ paramBody "DEP2")))))
+					(_FSET (_ 'currentShelfELEV (_S2V (_& (_ paramBody "ELEV")))))
+					(_FSET (_ 'currentShelfTHICKNESS (_S2V (_& (_ paramBody "THICKNESS")))))
+
+					(_FSET (_ 'lengthParametersForShelfAndLeft (_CALCULATEPANELSINTERSECTIONLENGTH currentShelfDEP2 (_ 0 0 LEFT_PANEL_FRONT_VARIANCE LEFT_PANEL_BACK_VARIANCE))))
+					(mapcar '_SETA '(lengthForShelfAndLeft frontStartingPointShelfL backStartingPointShelfL frontStartingPointLeft backStartingPointLeft) lengthParametersForShelfAndLeft)
+
+					(_FSET (_ 'halfOfThickness (/ currentShelfTHICKNESS 2.0)))
+					(_FSET (_ 'holePosOnAxisY (_= "currentShelfELEV + halfOfThickness + bottomSideStyleV2")))
+
+					(if (_EXISTPANEL AK_NOTCHED_LEFT_PANEL_CODE)
+						(progn
+							(foreach operationParams OPERATION_LIST
+								(mapcar '_SETA '(operationName connectorParams horizontalHolePos) operationParams)
+
+								(_FSET (_ 'leftPanelPointListForShelf (_GETHOLEPOINTLIST operationName 
+									(_ lengthForShelfAndLeft holePosOnAxisY 0 "X") 
+									(_ (+ frontStartingPointLeft FIXED_SHELF_HOLES_FRONT_SHIFT_VALUE FIXED_SHELF_FRONT_OFFSET) (- backStartingPointLeft FIXED_SHELF_HOLES_FRONT_SHIFT_VALUE FIXED_SHELF_FRONT_OFFSET) nil currentShelfDEP2) 
+									(_ FITTING_PARAMETERS nil))))
+								(_HOLEGROUP operationName AK_NOTCHED_LEFT_PANEL_CODE leftPanelPointListForShelf (_ nil "Y-") connectorParams)
+							)
+						)
+					)
+				)
+			)
+			(_FSET (_ 'shelfCounter (+ shelfCounter 1)))
+		)
+	)
+)

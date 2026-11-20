@@ -1,0 +1,109 @@
+(setq wwg_layerName (ifnull gm1:layerName szBodyLayer))
+
+(cond
+	((or  (< unitW kpmMin) (> unitW kpmMax) (< unitH kpmMin) (> unitH kpmMax))
+        (alert "\nGirilen olculer uretilemez.!
+Lutfen genislik,yukseklik ve derinlik olculerinizi gozden geciriniz.")
+        (/ 0 0)
+       (princ)
+       )
+)
+
+
+(initget (strcat (Xstr "Left Right") " ~_Left ~_Right"))
+(setq kpmLR (getkword (Xstr "\nKapamanýn yönü nasýl yerleþsin? Left/Right: ")))
+(cond
+	((equal kpmLR "Right")
+		(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+		(createGPanel 
+			(list 
+				(list 0.0 0.0 0.0) 
+				(list DL10_D1 0.0 0.0) 
+				(list DL10_D1 unitH 0.0) 
+				(list 0.0 unitH 0.0) 
+			) 
+			nil
+			DL10_T1 
+			0.0 
+			0.0 
+			(list (- unitW DL10_T1) (+ (- unitD) DL10_D1) dAltKot)
+			"DL10_01" 
+			"" 
+			nil 
+			"SIDE" 
+			(strcat kodBlock "_" wwg_layerName)
+			wwg_layerName
+			"noedgedrawing"
+		)
+		
+		(setq wwg_layerName (ifnull gm1:layerName szBodyLayer))
+		(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+		(createGPanel 
+			(list 
+				(list 0.0 0.0 0.0) 
+				(list (- unitW DL10_T1) 0.0 0.0) 
+				(list (- unitW DL10_T1) unitH 0.0) 
+				(list 0.0 unitH 0.0) 
+			) 
+			nil
+			DL10_T1 
+			0.0
+			(d2r 90.0) 
+			(list 0.0 (+ (- unitD) 0.0) dAltKot)
+			"DL10_02" 
+			"" 
+			nil 
+			"SIDE" 
+			(strcat kodBlock "_" wwg_layerName)
+			wwg_layerName
+			"noedgedrawing"
+		)
+	)	
+	(T
+		(setq wwg_layerName (ifnull gm1:layerName szBodyLayer))
+		(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+		(createGPanel 
+			(list 
+				(list 0.0 0.0 0.0) 
+				(list DL10_D1 0.0 0.0) 
+				(list DL10_D1 unitH 0.0) 
+				(list 0.0 unitH 0.0) 
+			) 
+			nil
+			DL10_T1 
+			0.0 
+			0.0 
+			(list 0.0 (+ (- unitD) DL10_D1) dAltKot)
+			"DL10_01" 
+			"" 
+			nil 
+			"SIDE" 
+			(strcat kodBlock "_" wwg_layerName)
+			wwg_layerName
+			"noedgedrawing"
+		)
+		
+		(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+		(createGPanel 
+			(list 
+				(list 0.0 0.0 0.0) 
+				(list (- unitW DL10_T1) 0.0 0.0) 
+				(list (- unitW DL10_T1) unitH 0.0) 
+				(list 0.0 unitH 0.0) 
+			) 
+			nil
+			DL10_T1 
+			0.0
+			(d2r 90.0) 
+			(list DL10_T1 (+ (- unitD) 0.0) dAltKot)
+			"DL10_02" 
+			"" 
+			nil 
+			"SIDE" 
+			(strcat kodBlock "_" wwg_layerName)
+			wwg_layerName
+			"noedgedrawing"
+		)
+	)
+)
+

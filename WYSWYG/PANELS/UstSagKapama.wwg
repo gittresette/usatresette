@@ -1,0 +1,22 @@
+(setq wwg_layerName (ifnull gm1:layerName szBodyLayer))
+(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+(createGPanel 
+	(list 
+		(list 0.0 0.0 0.0) 
+		(list 10.0 0.0 0.0) 
+		(list 10.0 (- unitH 3.6) 0.0) 
+		(list 0.0 (- unitH 3.6) 0.0) 
+	) 
+	nil
+	ad_et 
+	0.0 
+	0.0 
+	(list 0.0 (+ (- unitD) 10) (+ dAltKot ad_et))
+	"SAG_YAN_KAPAMA" 
+	"" 
+	nil 
+	"SIDE" 
+	(strcat kodBlock "_" wwg_layerName)
+	wwg_layerName
+	"noedgedrawing"
+)

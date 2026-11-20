@@ -1,0 +1,23 @@
+(setq KayitEni 10.0)
+(setq wwg_layerName (ifnull gm1:layerName szBodyLayer))
+(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+(createGPanel
+	(list 
+		(list 0.0 0.0 0.0) 
+		(list (- unitW 3.6) 0.0 0.0) 
+		(list (- unitW 3.6) KayitEni 0.0) 
+		(list 0.0 KayitEni 0.0) 
+	) 
+	nil
+	ad_et
+	0.0
+	0.0
+	(list ad_et unitD (- unitH ad_et))
+	"UST_KAYIT"
+	""
+	nil
+	"SHELF"
+	(strcat kodBlock "_" wwg_layerName)
+	wwg_layerName
+	"noedgedrawing"
+)

@@ -1,0 +1,23 @@
+(setq w_kayitEni (cm 10.0))
+(setq wwg_layerName (ifnull gm1:layerName szBodyLayer))
+(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+(createGPanel 
+	(list 
+		(list 0.0 0.0 0.0) 
+		(list (- unitW (* 2 ad_et)) 0.0 0.0) 
+		(list (- unitW (* 2 ad_et))w_kayitEni 0.0) 
+		(list 0.0 w_kayitEni 0.0) 
+	) 
+	nil
+	ad_et
+	0.0
+	(d2r 90.0) 
+	(list ad_et (- (* 2 ad_et)) (- (+ unitH dAltKot) w_kayitEni))
+	"PANEL_NAILERS_BACK" 
+	"" 
+	nil
+	"SIDE" 
+	(strcat kodBlock "_" wwg_layerName)
+	wwg_layerName
+	"noedgedrawing"
+)

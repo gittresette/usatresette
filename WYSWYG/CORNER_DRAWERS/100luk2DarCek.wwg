@@ -1,0 +1,124 @@
+(setq BCekmece 10.0)
+(setq KCekmece 10.0)
+(setq CTaban 0.8)
+(setq 1CekKot (+ (+ dAltKot (* unitH 0.75)) 3.0))
+(setq 2DCekKot (+ (+ dAltKot (* unitH 0.5)) 3.0))
+(setq 2CekKot (+ (+ dAltKot (* unitH 0.5)) 3.0))
+(setq 3GCekKot (+ dAltKot 3.0))
+(setq 3DCekKot (+ (+ dAltKot (* unitH 0.25)) 3.0))
+(setq 4CekKot (+ dAltKot 3.0))
+
+(setq wwg_layerName (ifnull gm1:layerName szBodyLayer))
+
+(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+(createGPanel
+	(list 
+		(list 56.2 -98.2 0.0) 
+		(list 56.2 -95.65 0.0) 
+		(list 4.65 -44.11 0.0) 
+		(list 3.38 -45.38 0.0) 
+	) 
+	nil
+	BCekmece
+	0.0
+	0.0
+	(list 0.0 54.1 2DCekKot)
+	"SOL_PANEL"
+	""
+	nil
+	"SHELF"
+	(strcat kodBlock "_" wwg_layerName)
+	wwg_layerName
+	"noedgedrawing"
+)
+
+(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+(createGPanel
+	(list 
+		(list 44.11 -4.65 0.0) 
+		(list 95.65 -56.2 0.0) 
+		(list 98.2 -56.2 0.0) 
+		(list 45.38 -3.38 0.0) 
+	) 
+	nil
+	BCekmece
+	0.0
+	0.0
+	(list 0.0 52.8 2DCekKot)
+	"SAG_PANEL"
+	""
+	nil
+	"SHELF"
+	(strcat kodBlock "_" wwg_layerName)
+	wwg_layerName
+	"noedgedrawing"
+)
+
+(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+(createGPanel
+	(list 
+		(list 56.2 -56.2 0.0) 
+		(list 56.2 -98.2 0.0) 
+		(list 58.0 -98.2 0.0) 
+		(list 58.0 -58.0 0.0) 
+		(list 98.2 -58.0 0.0) 
+		(list 98.2 -56.2 0.0) 
+	) 
+	nil
+	BCekmece
+	0.0
+	0.0
+	(list 0.0 42.0 2DCekKot)
+	"ON_PANEL"
+	""
+	nil
+	"SHELF"
+	(strcat kodBlock "_" wwg_layerName)
+	wwg_layerName
+	"noedgedrawing"
+)
+
+(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+(createGPanel
+	(list 
+		(list 45.38 -5.93 0.0) 
+		(list 44.11 -4.65 0.0) 
+		(list 4.65 -44.11 0.0) 
+		(list 5.93 -45.38 0.0) 
+	) 
+	nil
+	BCekmece
+	0.0
+	0.0
+	(list 0.0 40.71 2DCekKot)
+	"ARKA_PANEL"
+	""
+	nil
+	"SHELF"
+	(strcat kodBlock "_" wwg_layerName)
+	wwg_layerName
+	"noedgedrawing"
+)
+
+(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+(createGPanel
+	(list 
+		(list 3.38 -45.38 0.0) 
+		(list 56.2 -98.2 0.0) 
+		(list 56.2 -56.2 0.0) 
+		(list 98.2 -56.2 0.0) 
+		(list 45.38 -3.38 0.0) 
+	) 
+	nil
+	CTaban
+	0.0
+	0.0
+	(list 0.0 94.8 (- 2DCekKot 0.8))
+	"TABAN"
+	""
+	nil
+	"SHELF"
+	(strcat kodBlock "_" wwg_layerName)
+	wwg_layerName
+	"noedgedrawing"
+)

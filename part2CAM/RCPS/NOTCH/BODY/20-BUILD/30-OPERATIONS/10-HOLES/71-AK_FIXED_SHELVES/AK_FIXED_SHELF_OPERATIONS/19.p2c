@@ -1,0 +1,149 @@
+; Notch variant of fixed shelf operations - replaces holes on notched panels
+(if (and (_NOTNULL CORNER_UNIT_CONTROL) (_NOTNULL AK_FIXED_SHELF_ELEV_LIST)
+		 (or (equal __MODULTYPE "AK2") (equal __MODULTYPE "UK2") (equal __MODULTYPE "AK3") (equal __MODULTYPE "UK3")))
+	(progn
+		(_FSET (_ 'shelfCounter 1))
+		(repeat (length AK_FIXED_SHELF_ELEV_LIST)
+			(_FSET (_ 'currentShelfCODE (_& (_ (XSTR "CORNER_UNIT") "_" (XSTR "NOTCHED_FIXED_SHELF") "_" shelfCounter))))
+
+			(if (_EXISTPANEL currentShelfCODE)
+				(progn
+					(_FSET (_ 'paramBody (_& (_ "AK_NOTCHED_FIXED_SHELF_" shelfCounter "_"))))
+
+					; Retrieve stored shelf dimensions
+					(_FSET (_ 'currentShelfHEI (_S2V (_& (_ paramBody "HEI")))))
+					(_FSET (_ 'currentShelfWID (_S2V (_& (_ paramBody "WID")))))
+					(_FSET (_ 'currentShelfDEP (_S2V (_& (_ paramBody "DEP")))))
+					(_FSET (_ 'currentShelfDEP2 (_S2V (_& (_ paramBody "DEP2")))))
+					(_FSET (_ 'currentShelfELEV (_S2V (_& (_ paramBody "ELEV")))))
+					(_FSET (_ 'currentShelfTHICKNESS (_S2V (_& (_ paramBody "THICKNESS")))))
+					(_FSET (_ 'currentShelfNHEI (_S2V (_& (_ paramBody "NHEI")))))
+					(_FSET (_ 'currentShelfNWID (_S2V (_& (_ paramBody "NWID")))))
+
+					; Face selection for operation
+					(if (_NOTNULL FIXED_SHELF_HOLES_ON_LOWER_SURFACE)
+						(progn
+							(_FSET (_ 'currentShelfPDATA (_S2V (_& (_ paramBody "PDATA")))))
+							(_FSET (_ 'currentShelfROT (_S2V (_& (_ paramBody "ROT")))))
+							(_FSET (_ 'currentShelfMAT (_S2V (_& (_ paramBody "MAT")))))
+
+							(_FSET (_ 'currentShelfCODE (_CREATESFACEMAIN currentShelfCODE (_ currentShelfPDATA currentShelfROT currentShelfMAT currentShelfTHICKNESS "Y"))))
+						)
+					)
+
+					; Calculate intersection lengths between notched fixed shelf and side panels
+					; Left side connection: shelf's HEI edge (X=HEI, along DEP2 axis)
+					(_FSET (_ 'lengthParametersForShelfAndLeft (_CALCULATEPANELSINTERSECTIONLENGTH currentShelfDEP2 (_ 0 0 LEFT_PANEL_FRONT_VARIANCE LEFT_PANEL_BACK_VARIANCE))))
+					(mapcar '_SETA '(lengthForShelfAndLeft frontStartingPointShelfL backStartingPointShelfL frontStartingPointLeft backStartingPointLeft) lengthParametersForShelfAndLeft)
+
+					; Right side connection: shelf's WID edge (Y=WID, along DEP axis)
+					(_FSET (_ 'lengthParametersForShelfAndRight (_CALCULATEPANELSINTERSECTIONLENGTH currentShelfDEP (_ 0 0 RIGHT_PANEL_FRONT_VARIANCE RIGHT_PANEL_BACK_VARIANCE))))
+					(mapcar '_SETA '(lengthForShelfAndRight frontStartingPointShelfR backStartingPointShelfR frontStartingPointRight backStartingPointRight) lengthParametersForShelfAndRight)
+
+					(_FSET (_ 'halfOfThickness (/ currentShelfTHICKNESS 2.0)))
+					(_FSET (_ 'holePosOnAxisY (_= "currentShelfELEV + halfOfThickness + bottomSideStyleV2")))
+
+					; Calculate intersection lengths for secondary bottom panels
+					(if (_EXISTPANEL SECONDARY_BOTTOM_LEFT_PANEL_CODE)
+						(progn
+							(_FSET (_ 'secBotLeftLengthParams (_CALCULATEPANELSINTERSECTIONLENGTH SECONDARY_BOTTOM_LEFT_PANEL_HEI (_ 0 0 0 0))))
+							(mapcar '_SETA '(lengthForShelfAndSecBotLeft frontSBLL backSBLL frontSBLPanel backSBLPanel) secBotLeftLengthParams)
+						)
+					)
+					(if (_EXISTPANEL SECONDARY_BOTTOM_RIGHT_PANEL_CODE)
+						(progn
+							(_FSET (_ 'secBotRightLengthParams (_CALCULATEPANELSINTERSECTIONLENGTH SECONDARY_BOTTOM_RIGHT_PANEL_HEI (_ 0 0 0 0))))
+							(mapcar '_SETA '(lengthForShelfAndSecBotRight frontSBRL backSBRL frontSBRPanel backSBRPanel) secBotRightLengthParams)
+						)
+					)
+
+					(foreach operationParams OPERATION_LIST
+						(mapcar '_SETA '(operationName connectorParams horizontalHolePos) operationParams)
+
+						; --- Holes on NOTCHED FIXED SHELF for LEFT side panel ---
+						(_FSET (_ 'shelfPointListForLeftSide (_GETHOLEPOINTLIST operationName 
+							(_ lengthForShelfAndLeft currentShelfHEI (car horizontalHolePos) "Y") 
+							(_ frontStartingPointShelfL backStartingPointShelfL nil currentShelfDEP2) 
+							(_ FITTING_PARAMETERS nil))))
+						(_HOLEGROUP operationName currentShelfCODE shelfPointListForLeftSide (_ "X-" nil) connectorParams)
+
+						; --- Holes on NOTCHED FIXED SHELF for RIGHT side panel ---
+						(_FSET (_ 'shelfPointListForRightSide (_GETHOLEPOINTLIST operationName 
+							(_ lengthForShelfAndRight currentShelfWID (car horizontalHolePos) "X") 
+							(_ frontStartingPointShelfR backStartingPointShelfR nil currentShelfDEP) 
+							(_ FITTING_PARAMETERS nil))))
+						(_HOLEGROUP operationName currentShelfCODE shelfPointListForRightSide (_ "Y-" nil) connectorParams)
+
+						; --- Holes on NOTCHED LEFT side panel for fixed shelf ---
+						(if (_EXISTPANEL AK_NOTCHED_LEFT_PANEL_CODE)
+							(progn
+								(_FSET (_ 'leftPanelPointListForShelf (_GETHOLEPOINTLIST operationName 
+									(_ lengthForShelfAndLeft holePosOnAxisY 0 "X") 
+									(_ (+ frontStartingPointLeft FIXED_SHELF_HOLES_FRONT_SHIFT_VALUE FIXED_SHELF_FRONT_OFFSET) (- backStartingPointLeft FIXED_SHELF_HOLES_FRONT_SHIFT_VALUE FIXED_SHELF_FRONT_OFFSET) nil currentShelfDEP2) 
+									(_ FITTING_PARAMETERS nil))))
+								(_HOLEGROUP operationName AK_NOTCHED_LEFT_PANEL_CODE leftPanelPointListForShelf (_ nil "Y-") connectorParams)
+							)
+						)
+
+						; --- Holes on NOTCHED RIGHT side panel for fixed shelf ---
+						(if (_EXISTPANEL AK_NOTCHED_RIGHT_PANEL_CODE)
+							(progn
+								(_FSET (_ 'rightPanelPointListForShelf (_GETHOLEPOINTLIST operationName 
+									(_ lengthForShelfAndRight holePosOnAxisY 0 "X") 
+									(_ (_= "currentShelfDEP - AK_NOTCHED_RIGHT_PANEL_WID + frontStartingPointRight + FIXED_SHELF_HOLES_FRONT_SHIFT_VALUE + FIXED_SHELF_FRONT_OFFSET") (_= "AK_NOTCHED_RIGHT_PANEL_WID - currentShelfDEP + backStartingPointRight - FIXED_SHELF_HOLES_FRONT_SHIFT_VALUE - FIXED_SHELF_FRONT_OFFSET") T currentShelfDEP) 
+									(_ FITTING_PARAMETERS nil))))
+								(_HOLEGROUP operationName AK_NOTCHED_RIGHT_PANEL_CODE rightPanelPointListForShelf (_ nil "Y-") connectorParams)
+							)
+						)
+
+						; --- Holes on NOTCHED FIXED SHELF for SECONDARY BOTTOM LEFT side panel ---
+						(if (_EXISTPANEL SECONDARY_BOTTOM_LEFT_PANEL_CODE)
+							(progn
+								(_FSET (_ 'shelfPointListForSecBotLeft (_GETHOLEPOINTLIST operationName 
+									(_ lengthForShelfAndSecBotLeft currentShelfNHEI (car horizontalHolePos) "Y") 
+									(_ frontSBLL backSBLL nil SECONDARY_BOTTOM_LEFT_PANEL_HEI) 
+									(_ FITTING_PARAMETERS nil))))
+								(_HOLEGROUP operationName currentShelfCODE shelfPointListForSecBotLeft (_ "X+" nil) connectorParams)
+							)
+						)
+
+						; --- Holes on SECONDARY BOTTOM LEFT side panel for fixed shelf ---
+						(if (_EXISTPANEL SECONDARY_BOTTOM_LEFT_PANEL_CODE)
+							(progn
+								(_FSET (_ 'holePosOnSecBotLeftX (- holePosOnAxisY __NOTCHDIM3)))
+								(_FSET (_ 'secBotLeftPanelPointList (_GETHOLEPOINTLIST operationName 
+									(_ lengthForShelfAndSecBotLeft holePosOnSecBotLeftX 0 "Y") 
+									(_ (+ frontSBLPanel FIXED_SHELF_HOLES_FRONT_SHIFT_VALUE) (- backSBLPanel FIXED_SHELF_HOLES_FRONT_SHIFT_VALUE) nil SECONDARY_BOTTOM_LEFT_PANEL_HEI) 
+									(_ FITTING_PARAMETERS nil))))
+								(_HOLEGROUP operationName SECONDARY_BOTTOM_LEFT_PANEL_CODE secBotLeftPanelPointList (_ nil "Y-") connectorParams)
+							)
+						)
+
+						; --- Holes on NOTCHED FIXED SHELF for SECONDARY BOTTOM RIGHT side panel ---
+						(if (_EXISTPANEL SECONDARY_BOTTOM_RIGHT_PANEL_CODE)
+							(progn
+								(_FSET (_ 'shelfPointListForSecBotRight (_GETHOLEPOINTLIST operationName 
+									(_ lengthForShelfAndSecBotRight currentShelfNWID (car horizontalHolePos) "X") 
+									(_ frontSBRL backSBRL nil SECONDARY_BOTTOM_RIGHT_PANEL_HEI) 
+									(_ FITTING_PARAMETERS nil))))
+								(_HOLEGROUP operationName currentShelfCODE shelfPointListForSecBotRight (_ "Y+" nil) connectorParams)
+							)
+						)
+
+						; --- Holes on SECONDARY BOTTOM RIGHT side panel for fixed shelf ---
+						(if (_EXISTPANEL SECONDARY_BOTTOM_RIGHT_PANEL_CODE)
+							(progn
+								(_FSET (_ 'secBotRightPanelPointList (_GETHOLEPOINTLIST operationName 
+									(_ lengthForShelfAndSecBotRight holePosOnAxisY 0 "Y") 
+									(_ (+ frontSBRPanel FIXED_SHELF_HOLES_FRONT_SHIFT_VALUE) (- backSBRPanel FIXED_SHELF_HOLES_FRONT_SHIFT_VALUE) T SECONDARY_BOTTOM_RIGHT_PANEL_HEI) 
+									(_ FITTING_PARAMETERS nil))))
+								(_HOLEGROUP operationName SECONDARY_BOTTOM_RIGHT_PANEL_CODE secBotRightPanelPointList (_ nil "Y-") connectorParams)
+							)
+						)
+					)
+				)
+			)
+			(_FSET (_ 'shelfCounter (+ shelfCounter 1)))
+		)
+	)
+)

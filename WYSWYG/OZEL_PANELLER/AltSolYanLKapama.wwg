@@ -1,0 +1,45 @@
+(setq wwg_layerName (ifnull gm1:layerName szBodyLayer))
+
+(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+(createGPanel
+	(list 
+		(list 0.0 0.0 0.0) 
+		(list 10.0 0.0 0.0) 
+		(list 10.0 ad_et 0.0) 
+		(list 0.0 ad_et 0.0) 
+	) 
+	nil
+	unitH
+	(d2r 90.0)
+	0.0
+	(list (- unitW ad_et) (+ (- unitD) 11.8) (+ dAltKot unitH))
+	"YAN"
+	""
+	nil
+	"SIDE"
+	(strcat kodBlock "_" wwg_layerName)
+	wwg_layerName
+	"noedgedrawing"
+)
+
+(setq kodBlock (nxtBnam (lmm_sfRead kod)) )
+(createGPanel
+	(list 
+		(list 0.0 0.0 0.0) 
+		(list unitW 0.0 0.0) 
+		(list unitW ad_et 0.0) 
+		(list 0.0 ad_et 0.0) 
+	) 
+	nil
+	unitH
+	(d2r 90.0)
+	(d2r 90.0)
+	(list 0.0 (- unitD) (+ dAltKot unitH))
+	"ON"
+	""
+	nil
+	"SIDE"
+	(strcat kodBlock "_" wwg_layerName)
+	wwg_layerName
+	"noedgedrawing"
+)

@@ -1,0 +1,16 @@
+(setq wwg_dModel
+	(cond 
+		((equal gm1:layername "CAB_BODY_WALL")
+			(getUpKapakname)
+		)
+		((equal gm1:layername "CAB_BODY_TALL")
+			(getTallKapakname)
+		)
+		(T
+			(getKapakname)
+		)
+	)
+)
+
+(setq doorId (kapak_ciz (list "B" wwg_dModel) "0-" (* unitW 0.25) -3.0 (* 0.25 unitH) 0.25 0.25 nil 0.0))
+(set_mdata (entlast) (list (cons k:animateScript "nil")))

@@ -1,0 +1,96 @@
+; Corner unit adjustable shelf ringo recipe
+
+(_RUNDEFAULTHELPERRCP "RINGO_DEFAULT" nil "p2chelper")
+
+(_FSET (_ 'currentShelfCODE (_& (_ (XSTR "CORNER_UNIT") "_" (XSTR "ADJUSTABLE_SHELF") "_" divisionCounter "_" shelfCounter))))
+(_FSET (_ 'paramBody (_& (_ "AK_ADJUSTABLE_SHELF_" divisionCounter "_" shelfCounter "_"))))
+; Global parameters of current shelf
+(_FSET (_ 'currentShelfHEI (_S2V (_& (_ paramBody "HEI")))))
+(_FSET (_ 'currentShelfWID (_S2V (_& (_ paramBody "WID")))))
+(_FSET (_ 'currentShelfDEP (_S2V (_& (_ paramBody "DEP")))))
+(_FSET (_ 'currentShelfDEP2 (_S2V (_& (_ paramBody "DEP2")))))
+(_FSET (_ 'currentShelfELEV (if (_S2V (_& (_ paramBody "ELEV"))) (_S2V (_& (_ paramBody "ELEV"))) 0.0)))
+(_FSET (_ 'currentShelfTHICKNESS (_S2V (_& (_ paramBody "THICKNESS")))))
+
+(if (_EXISTPANEL currentShelfCODE)
+	(progn
+		(if (_NOTNULL ASHELF_HOLES_ON_LOWER_SURFACE)
+			(progn
+				(_FSET (_ 'shelfROT (_S2V (_& (_ paramBody "ROT")))))
+				(_FSET (_ 'shelfMAT (_S2V (_& (_ paramBody "MAT")))))
+				(_FSET (_ 'shelfPDATA (_S2V (_& (_ paramBody "PDATA")))))
+				
+				(_FSET (_ 'currentShelfCODE (_CREATESFACEMAIN currentShelfCODE (_ shelfPDATA shelfROT shelfMAT currentShelfTHICKNESS "X"))))
+			)
+		)
+		(if (or (and (>= currentShelfHEI LIMIT_FOR_MIDDLE_HOLE_GROUP) (>= currentShelfWID LIMIT_FOR_MIDDLE_HOLE_GROUP)) (_NOTNULL IS_MIDDLE_HOLE_GROUP_AVAILABLE))
+			(progn
+				(_FSET (_ 'thirdRingo T))
+				(_FSET (_ 'thirdRingoOffsetDEP (+ (/ currentShelfDEP 2.0) MIDDLE_HOLE_GROUP_OFFSET_FROM_CENTER_OF_SIDE ASHELF_FRONT_OFFSET)))
+				(_FSET (_ 'thirdRingoOffsetDEP2 (+ (/ currentShelfDEP2 2.0) MIDDLE_HOLE_GROUP_OFFSET_FROM_CENTER_OF_SIDE ASHELF_FRONT_OFFSET)))
+			)
+			(_FSET (_ 'thirdRingo nil))
+		)
+		(_FSET (_ 'leftFrontHolePosX currentShelfHEI))
+		(_FSET (_ 'leftFrontHolePosY (- currentShelfDEP2 ASHELF_FRONT_HOLE_OFFSET)))
+		(_FSET (_ 'leftBackHolePosX currentShelfHEI))
+		(_FSET (_ 'leftBackHolePosY ASHELF_BACK_HOLE_OFFSET))
+
+		(_FSET (_ 'rightFrontHolePosX (- currentShelfDEP ASHELF_FRONT_HOLE_OFFSET)))
+		(_FSET (_ 'rightFrontHolePosY currentShelfWID))
+		(_FSET (_ 'rightBackHolePosX ASHELF_BACK_HOLE_OFFSET))
+		(_FSET (_ 'rightBackHolePosY currentShelfWID))
+		(if (_NOTNULL thirdRingo)
+			(progn
+				(_FSET (_ 'leftThirdHolePosX currentShelfHEI))
+				(_FSET (_ 'leftThirdHolePosY (_= "currentShelfDEP2 - thirdRingoOffsetDEP2 + ASHELF_FRONT_OFFSET")))
+				
+				(_FSET (_ 'rightThirdHolePosX (_= "currentShelfDEP - thirdRingoOffsetDEP + ASHELF_FRONT_OFFSET")))
+				(_FSET (_ 'rightThirdHolePosY currentShelfWID))
+			)
+		)
+		(_FSET (_ 'leftFrontHolePos (_ leftFrontHolePosX leftFrontHolePosY 0)))
+		(_FSET (_ 'leftBackHolePos (_ leftBackHolePosX leftBackHolePosY 0)))
+		(_FSET (_ 'rightFrontHolePos (_ rightFrontHolePosX rightFrontHolePosY 0)))
+		(_FSET (_ 'rightBackHolePos (_ rightBackHolePosX rightBackHolePosY 0)))
+
+		(_RINGO "LF" currentShelfCODE (_ leftFrontHolePos RINGO_PARAMETERS) "X-")
+		(_RINGO "LB" currentShelfCODE (_ leftBackHolePos RINGO_PARAMETERS) "X-")
+		(_RINGO "RF" currentShelfCODE (_ rightFrontHolePos RINGO_PARAMETERS) "Y-")
+		(_RINGO "RB" currentShelfCODE (_ rightBackHolePos RINGO_PARAMETERS) "Y-")
+		(_ITEMMAIN RINGO_CODE currentShelfCODE (_ (* QUANTITY_OF_ITEM 4) RINGO_UNIT))
+		(if (_NOTNULL thirdRingo)
+			(progn
+				(_FSET (_ 'leftMiddleHolePos (_ leftThirdHolePosX leftThirdHolePosY 0)))
+				(_FSET (_ 'rightMiddleHolePos (_ rightThirdHolePosX rightThirdHolePosY 0)))
+				
+				(_RINGO "LM" currentShelfCODE (_ leftMiddleHolePos RINGO_PARAMETERS) "X-")
+				(_RINGO "RM" currentShelfCODE (_ rightMiddleHolePos RINGO_PARAMETERS) "Y-")
+				(_ITEMMAIN RINGO_CODE currentShelfCODE (_ (* QUANTITY_OF_ITEM 2) RINGO_UNIT))
+			)
+		)
+		(_FSET (_ 'halfOfThickness (/ currentShelfTHICKNESS 2.0)))
+		(_FSET (_ 'currentDivisionELEV (_S2V (_& (_ currentDivision "_STARTFROMBOTTOM")))))
+		(_FSET (_ 'holePosOnAxisYLeft (_= "currentDivisionELEV + currentShelfELEV + halfOfThickness - bottomSideStyleV1 + LEFT_PANEL_LOWER_VARIANCE")))
+		(_FSET (_ 'holePosOnAxisYRight (_= "currentDivisionELEV + currentShelfELEV + halfOfThickness - bottomSideStyleV1 + RIGHT_PANEL_LOWER_VARIANCE")))
+		(if (_EXISTPANEL AK_LEFT_PANEL_CODE)
+			(progn
+				(_RINGO "FRONT" AK_LEFT_PANEL_CODE (_ (_ (+ ASHELF_FRONT_OFFSET ASHELF_FRONT_HOLE_OFFSET) holePosOnAxisYLeft 0) RINGO_PARAMETERS) nil)
+				(_RINGO "BACK" AK_LEFT_PANEL_CODE (_ (_ (_= "ASHELF_FRONT_OFFSET + currentShelfDEP2 - ASHELF_BACK_HOLE_OFFSET") holePosOnAxisYLeft 0) RINGO_PARAMETERS) nil)
+				(if (_NOTNULL thirdRingo)
+					(_RINGO "MIDDLE" AK_LEFT_PANEL_CODE (_ (_ thirdRingoOffsetDEP2 holePosOnAxisYLeft 0) RINGO_PARAMETERS) nil)
+				)
+			)
+		)
+		(if (_EXISTPANEL AK_RIGHT_PANEL_CODE)
+			(progn
+				(_RINGO "FRONT" AK_RIGHT_PANEL_CODE (_ (_ (_= "AK_RIGHT_PANEL_WID - ASHELF_FRONT_OFFSET - ASHELF_FRONT_HOLE_OFFSET") holePosOnAxisYRight 0) RINGO_PARAMETERS) nil)
+				(_RINGO "BACK" AK_RIGHT_PANEL_CODE (_ (_ (_= "AK_RIGHT_PANEL_WID - ASHELF_FRONT_OFFSET - currentShelfDEP + ASHELF_BACK_HOLE_OFFSET") holePosOnAxisYRight 0) RINGO_PARAMETERS) nil)
+				(if (_NOTNULL thirdRingo)
+					(_RINGO "MIDDLE" AK_RIGHT_PANEL_CODE (_ (_ (- AK_RIGHT_PANEL_WID thirdRingoOffsetDEP) holePosOnAxisYRight 0) RINGO_PARAMETERS) nil)
+				)
+			)
+		)
+	)
+)
+

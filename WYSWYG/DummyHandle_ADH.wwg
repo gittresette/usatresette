@@ -1,0 +1,19 @@
+(setq wwg_dModel
+	(cond 
+		((equal gm1:layername "CAB_BODY_WALL")
+			(getUpKapakname)
+		)
+		((equal gm1:layername "CAB_BODY_TALL")
+			(getTallKapakname)
+		)
+		(T
+			(getKapakname)
+		)
+	)
+)
+
+(setq wwg_KulpPayX 9.75)	;DUMMY KULP YANA KAYDIRMA
+(setq wwg_KulpPayY 2.80)	;DUMMY KULP ALTA KAYDIRMA
+
+(setq doorId (kapak_ciz (list "R" wwg_dModel) "KD" (* unitW 0.5) (- wwg_KulpPayX)) (- adDer 0.02) (- (+ dAltKot 72.0) wwg_KulpPayY) 0.5 0.5 nil 0.0)
+;(set_mdata (entlast) (list (cons k:animateScript "nil")))

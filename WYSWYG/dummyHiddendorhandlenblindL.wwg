@@ -1,0 +1,6 @@
+
+(setq wwg_KulpPayX 9.75)	;DUMMY KULP SOLA KAYDIRMA
+(setq wwg_KulpPayY 2.80)	;DUMMY KULP ALTA KAYDIRMA
+
+(setq doorId (kapak_ciz (list "R" "GORME" "!!FIX!!") "K-" (+ 3.0 wwg_KulpPayX) (+ unitD 2) wwg_KulpPayY unitW unitH nil 0.0))
+;(set_mdata (entlast) (list (cons k:animateScript "nil")))

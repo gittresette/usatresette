@@ -1,0 +1,7 @@
+INFIX_HOR_DIAMETER -> "Diameter of infix bolt hole on the opposite panel"
+INFIX_HOR_DEPTH -> "Depth of infix bolt hole on the opposite panel"
+INFIX_VER_DEPTH -> "Depth of infix pocket"
+INFIX_EXTENSION -> "Overrun of infix pocket outside the panel edge"
+INFIX_BOLT_HOLE_POS -> "Distance of infix bolt axis from panel face"
+INFIX_CODE -> "Code of infix"
+INFIX_UNIT -> "Unit of infix"

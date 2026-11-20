@@ -1,0 +1,92 @@
+; Corner unit adjustable shelf blumfix recipe
+
+(_RUNDEFAULTHELPERRCP "BLUMFIX_DEFAULT" nil "p2chelper")
+
+(_FSET (_ 'currentShelfCODE (_& (_ (XSTR "CORNER_UNIT") "_" (XSTR "ADJUSTABLE_SHELF") "_" divisionCounter "_" shelfCounter))))
+(_FSET (_ 'paramBody (_& (_ "AK_ADJUSTABLE_SHELF_" divisionCounter "_" shelfCounter "_"))))
+; Global parameters of current shelf
+(_FSET (_ 'currentShelfHEI (_S2V (_& (_ paramBody "HEI")))))
+(_FSET (_ 'currentShelfWID (_S2V (_& (_ paramBody "WID")))))
+(_FSET (_ 'currentShelfDEP (_S2V (_& (_ paramBody "DEP")))))
+(_FSET (_ 'currentShelfDEP2 (_S2V (_& (_ paramBody "DEP2")))))
+(_FSET (_ 'currentShelfELEV (if (_S2V (_& (_ paramBody "ELEV"))) (_S2V (_& (_ paramBody "ELEV"))) 0.0)))
+(_FSET (_ 'currentShelfTHICKNESS (_S2V (_& (_ paramBody "THICKNESS")))))
+
+(if (_EXISTPANEL currentShelfCODE)
+	(progn
+		(if (_NOTNULL ASHELF_HOLES_ON_LOWER_SURFACE)
+			(progn
+				(_FSET (_ 'shelfROT (_S2V (_& (_ paramBody "ROT")))))
+				(_FSET (_ 'shelfMAT (_S2V (_& (_ paramBody "MAT")))))
+				(_FSET (_ 'shelfPDATA (_S2V (_& (_ paramBody "PDATA")))))
+				
+				(_FSET (_ 'currentShelfCODE (_CREATESFACEMAIN currentShelfCODE (_ shelfPDATA shelfROT shelfMAT currentShelfTHICKNESS "X"))))
+			)
+		)
+		(if (or (and (>= currentShelfHEI LIMIT_FOR_MIDDLE_BLUMFIX) (>= currentShelfWID LIMIT_FOR_MIDDLE_BLUMFIX)) (_NOTNULL IS_MIDDLE_BLUMFIX_AVAILABLE))
+			(progn
+				(_FSET (_ 'thirdBlumfix T))
+				(_FSET (_ 'thirdBlumfixOffsetDEP (+ (/ currentShelfDEP 2.0) MIDDLE_HOLE_GROUP_OFFSET_FROM_CENTER_OF_SIDE ASHELF_FRONT_OFFSET)))
+				(_FSET (_ 'thirdBlumfixOffsetDEP2 (+ (/ currentShelfDEP2 2.0) MIDDLE_HOLE_GROUP_OFFSET_FROM_CENTER_OF_SIDE ASHELF_FRONT_OFFSET)))
+			)
+			(_FSET (_ 'thirdBlumfix nil))
+		)
+		(_FSET (_ 'leftFrontHolePosX currentShelfHEI))
+		(_FSET (_ 'leftFrontHolePosY (- currentShelfDEP2 ASHELF_FRONT_HOLE_OFFSET)))
+		(_FSET (_ 'leftBackHolePosX currentShelfHEI))
+		(_FSET (_ 'leftBackHolePosY ASHELF_BACK_HOLE_OFFSET))
+
+		(_FSET (_ 'rightFrontHolePosX (- currentShelfDEP ASHELF_FRONT_HOLE_OFFSET)))
+		(_FSET (_ 'rightFrontHolePosY currentShelfWID))
+		(_FSET (_ 'rightBackHolePosX ASHELF_BACK_HOLE_OFFSET))
+		(_FSET (_ 'rightBackHolePosY currentShelfWID))
+		(if (_NOTNULL thirdBlumfix)
+			(progn
+				(_FSET (_ 'leftThirdHolePosX currentShelfHEI))
+				(_FSET (_ 'leftThirdHolePosY (_= "currentShelfDEP2 - thirdBlumfixOffsetDEP2 + ASHELF_FRONT_OFFSET")))
+				
+				(_FSET (_ 'rightThirdHolePosX (_= "currentShelfDEP - thirdBlumfixOffsetDEP + ASHELF_FRONT_OFFSET")))
+				(_FSET (_ 'rightThirdHolePosY currentShelfWID))
+			)
+		)
+		(_FSET (_ 'halfOfThickness (/ currentShelfTHICKNESS 2.0)))
+		(_FSET (_ 'holeCodeBody (_& (_ "AK_SHELF_BLUMFIX_HOLE_" divisionCounter "_" shelfCounter "_"))))
+		
+		(_BLUMFIX (_& (_ holeCodeBody "LF")) currentShelfCODE (_ (_ leftFrontHolePosX leftFrontHolePosY (* halfOfThickness -1)) BLUMFIX_PARAMETERS) "X-")
+		(_BLUMFIX (_& (_ holeCodeBody "LB")) currentShelfCODE (_ (_ leftBackHolePosX leftBackHolePosY (* halfOfThickness -1)) BLUMFIX_PARAMETERS) "X-")
+		(_BLUMFIX (_& (_ holeCodeBody "RF")) currentShelfCODE (_ (_ rightFrontHolePosX rightFrontHolePosY (* halfOfThickness -1)) BLUMFIX_PARAMETERS) "Y-")
+		(_BLUMFIX (_& (_ holeCodeBody "RB")) currentShelfCODE (_ (_ rightBackHolePosX rightBackHolePosY (* halfOfThickness -1)) BLUMFIX_PARAMETERS) "Y-")
+		(_ITEMMAIN BLUMFIX_CODE currentShelfCODE (_ (* QUANTITY_OF_ITEM 4) BLUMFIX_UNIT))
+		(if (_NOTNULL thirdBlumfix)
+			(progn
+				(_BLUMFIX (_& (_ holeCodeBody "LM")) currentShelfCODE (_ (_ leftThirdHolePosX leftThirdHolePosY (* halfOfThickness -1)) BLUMFIX_PARAMETERS) "X-")
+				(_BLUMFIX (_& (_ holeCodeBody "RM")) currentShelfCODE (_ (_ rightThirdHolePosX rightThirdHolePosY (* halfOfThickness -1)) BLUMFIX_PARAMETERS) "Y-")
+				(_ITEMMAIN BLUMFIX_CODE currentShelfCODE (_ (* QUANTITY_OF_ITEM 2) BLUMFIX_UNIT))
+			)
+		)
+		(_FSET (_ 'currentDivisionELEV (_S2V (_& (_ currentDivision "_STARTFROMBOTTOM")))))
+		(_FSET (_ 'holePosOnAxisYLeft (_= "currentDivisionELEV + currentShelfELEV + halfOfThickness - bottomSideStyleV1 + LEFT_PANEL_LOWER_VARIANCE")))
+		(_FSET (_ 'holePosOnAxisYRight (_= "currentDivisionELEV + currentShelfELEV + halfOfThickness - bottomSideStyleV1 + RIGHT_PANEL_LOWER_VARIANCE")))
+		(if (_EXISTPANEL AK_LEFT_PANEL_CODE)
+			(progn
+				(_FSET (_ 'holeCodeBody (_& (_ "AK_LEFT_PANEL_BLUMFIX_HOLE_" divisionCounter "_" shelfCounter "_"))))
+				(_BLUMFIX (_& (_ holeCodeBody "FRONT")) AK_LEFT_PANEL_CODE (_ (_ (+ ASHELF_FRONT_OFFSET ASHELF_FRONT_HOLE_OFFSET) holePosOnAxisYLeft 0) BLUMFIX_PARAMETERS) nil)
+				(_BLUMFIX (_& (_ holeCodeBody "BACK")) AK_LEFT_PANEL_CODE (_ (_ (_= "ASHELF_FRONT_OFFSET + currentShelfDEP2 - ASHELF_BACK_HOLE_OFFSET") holePosOnAxisYLeft 0) BLUMFIX_PARAMETERS) nil)
+				(if (_NOTNULL thirdBlumfix)
+					(_BLUMFIX (_& (_ holeCodeBody "MIDDLE")) AK_LEFT_PANEL_CODE (_ (_ thirdBlumfixOffsetDEP2 holePosOnAxisYLeft 0) BLUMFIX_PARAMETERS) nil)
+				)
+			)
+		)
+		(if (_EXISTPANEL AK_RIGHT_PANEL_CODE)
+			(progn
+				(_FSET (_ 'holeCodeBody (_& (_ "AK_RIGHT_PANEL_BLUMFIX_HOLE_" divisionCounter "_" shelfCounter "_"))))
+				(_BLUMFIX (_& (_ holeCodeBody "FRONT")) AK_RIGHT_PANEL_CODE (_ (_ (_= "AK_RIGHT_PANEL_WID - ASHELF_FRONT_OFFSET - ASHELF_FRONT_HOLE_OFFSET") holePosOnAxisYRight 0) BLUMFIX_PARAMETERS) nil)
+				(_BLUMFIX (_& (_ holeCodeBody "BACK")) AK_RIGHT_PANEL_CODE (_ (_ (_= "AK_RIGHT_PANEL_WID - ASHELF_FRONT_OFFSET - currentShelfDEP + ASHELF_BACK_HOLE_OFFSET") holePosOnAxisYRight 0) BLUMFIX_PARAMETERS) nil)
+				(if (_NOTNULL thirdBlumfix)
+					(_BLUMFIX (_& (_ holeCodeBody "MIDDLE")) AK_RIGHT_PANEL_CODE (_ (_ (- AK_RIGHT_PANEL_WID thirdBlumfixOffsetDEP) holePosOnAxisYRight 0) BLUMFIX_PARAMETERS) nil)
+				)
+			)
+		)
+	)
+)
+

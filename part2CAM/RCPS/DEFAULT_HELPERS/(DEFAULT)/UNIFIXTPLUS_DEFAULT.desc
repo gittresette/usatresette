@@ -1,0 +1,8 @@
+UNIFIXTPLUS_HOR_DIAMETER -> "Diameter of unifixt plus bolt hole on the opposite panel"
+UNIFIXTPLUS_HOR_DEPTH -> "Depth of unifixt plus bolt hole on the opposite panel"
+UNIFIXTPLUS_VER_DEPTH -> "Depth of unifixt plus tool path (flange depth is added if flange exists)"
+UNIFIXTPLUS_ADD_FLANGE -> "Add flange on unifixt plus pocket"
+UNIFIXTPLUS_FLANGE_DEPTH -> "Flange depth on unifixt plus pocket"
+UNIFIXTPLUS_BOLT_HOLE_POS -> "Distance of unifixt plus bolt axis from panel face"
+UNIFIXTPLUS_CODE -> "Code of unifixt plus"
+UNIFIXTPLUS_UNIT -> "Unit of unifixt plus"

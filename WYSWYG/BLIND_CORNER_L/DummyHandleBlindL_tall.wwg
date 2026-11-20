@@ -1,0 +1,5 @@
+
+(setq wwg_KulpPayX (cm 9.75))	;DUMMY KULP YANA KAYDIRMA
+(setq wwg_KulpPayY (cm 2.80))	;DUMMY KULP ALTA KAYDIRMA
+
+(setq doorId (kapak_ciz (list "R" (getTallKapakname)) "KD" (- unitW (* gor_gen 0.5) (- wwg_KulpPayX)) (- adDer (cm 0.02)) (- (+ dAltKot (cm 72.0)) wwg_KulpPayY) 0.5 0.5 nil 0.0))
